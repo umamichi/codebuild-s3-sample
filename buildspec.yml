@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+      - python get-pip.py
+      - pip install awscli
+  build:
+    commands:
+      - node -v
+  post_build:
+    commands:
+      - aws s3 sync release s3://codebuild-s3-sample --delete
+    #   - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths '/*'

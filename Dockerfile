@@ -1,5 +1,6 @@
-FROM node:10-alpine
+FROM node:8-alpine
 
+# install python
 RUN apk add --no-cache curl python
 
 RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && \
