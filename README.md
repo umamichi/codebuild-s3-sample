@@ -1,3 +1,194 @@
-# codebuild-s3-sample
+# 脱Jenkins！AWS Codebuildを使ってフロントエンド開発環境をS3にデプロイする
 
-This is samples code. Deploy to AWS S3 by Codebuild.
+## AWS Codebuildとは？
+
+その名の通り、CodeをBuildできるサービス
+
+ソースコードをコンパイルし、テストを実行し、デプロイ可能なソフトウェアパッケージを作成できる完全マネージド型のビルドサービス
+
+CodeBuild は連続的にスケールされ、複数のビルドが同時に処理されるので、ビルドが待機状態でキュー内に残されることがありません
+
+
+### 特徴
+
++ ビルドサーバーなしでビルド可能
+
++ アップデート、管理が不要
+
++ 自動でスケールされるので、並列ビルドが可能（待ち時間なし）
+
++ AWSのサービス `EC2` `S3` `CodePipeline` `Lambda` などとの連携が容易
+
++ `CodePipeline` と連携すれば、テスト→リリースまでを自動化できる
+
++ 既存の`Jenkins`と連携ができる、ビルド処理部分だけを `CodeBuild` に置き換えも可能
+　→ JenkinsのUIやユーザ管理をそのまま使い続けられるメリットがある
+
++ `Github` や `GitBucket` `GitLab` と連携できて、PUSHをトリガーにビルドも可能
+
++ インストール不要で `AWS CLI` が使える
+
+### 料金
+
+ビルド1分ごとに料金が請求される
+
+一番安いプランで、Linuxで1分ビルドすると `0.005ドル` = `0.57円`
+
+https://aws.amazon.com/jp/codebuild/pricing/
+
+#### 無料利用枠あり（2018/11 現在）
+
+AWS CodeBuild の無料利用枠では、`build.general1.small（一番安いLinuxのプラン）` を使って **1 か月あたりビルドを 100 分使用できます。**
+
+CodeBuild の無料利用枠は、**12 か月間の AWS 無料利用枠の期間が終了しても自動的に期限切れになることはありません。**
+
+
+### Jenkinsとの比較
+
+`AWS EC2` に `Jenkins` をインストールしている前提で
+
+| | Jenkins | AWS CodeBuild |
+| -- | --- | --- |
+| 料金 | Jenkins AgentのEC2インスタンスの待機時間分 | ビルド1分ごとに請求 |
+| スケールアウト | しない（EC2のスペックが限界） | する |
+| OS | EC2のOSに依存 | コンテナを扱えるので自由に構築可能 |
+
+## 実際にデプロイしてみる
+
+1. 以下のファイルをつくる
+
+今回は、ビルドツールとして `Parcel` を使う
+
+作業のためのディレクトリを切ります
+
+```
+$ mkdir codebuild-s3-sample && cd codebuild-s3-sample
+```
+
+まず `package.json` をつくります
+
+```
+// package.json
+{
+  "name": "codebuild-s3-sample",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "rm -rf release && parcel build src/index.html --out-dir release"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-bundler": "^1.10.3"
+  }
+}
+```
+
+`src` ディレクトリを作り、2ファイルを配置
+
+```
+// src/index.html
+<html>
+<head>
+  <title>codebuild-s3-sample</title>
+</head>
+<body>
+  Hello!! This is codebuild-s3-sample html.
+  <script src="./index.js"></script>
+</body>
+</html>
+```
+
+```
+// src/index.js
+console.log('index.js');
+```
+
+.gitignore もつくっておきます
+```
+# .gitignore
+node_modules
+.cache
+release
+dist
+```
+
+### 2. まずローカルで確認
+
+インストールして、起動
+
+```
+$ yarn
+$ yarn start
+```
+
+http://localhost:1234/ にアクセスして `Hello!! This is codebuild-s3-sample html` と表示されればOK
+
+ビルド処理も確認
+
+```
+$ yarn build
+```
+
+`release` ディレクトリにビルド後のファイルが生成されればOK
+
+
+### 3. `buildspec.yml` をルートに生成
+
+デプロイしたい `S3のバケット名` を決め、以下のように `buildspec.yml` ファイルを作ります
+
+```
+# buildspec.yml
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      # install yarn
+      - sudo apt-get update && sudo apt-get install apt-transport-https
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+      - echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+      - sudo apt-get update && sudo apt-get install yarn
+      - yarn --version
+      # install packages
+      - yarn
+  build:
+    commands:
+      - yarn build
+  post_build:
+    commands:
+      - aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
+```
+
+Linuxのデフォルトでは `yarn` が使えないので、`yarn` をインストールしたのち、
+
+`yarn build` し、 `AWS CLI` を使って `release` ディレクトリをS3にデプロイします
+
+`--delete` でS3にしかないファイルはS3から削除
+
+`--acl public-read` で `public read` にして公開しています
+
+CodeBuildでは **デフォルトで `AWS CLI` が使えるところが、とても便利です**
+
+
+### 4. S3バケットをつくる
+
+先ほど指定した名前のS3バケットを、AWSコンソールから作ります
+
+
+### 5. CodeBuildのビルドプロジェクトを作成
+
+
+
+
+## （Advance）CloudFrontのキャッシュをクリアする
+
+## （Advance）Dockerイメージを使用する
+
+## （Advance）Cloud​FormationでLambdaをつくる
+
+
+## 参考
+
+https://int128.hatenablog.com/entry/2018/04/20/190949#f-60bda4f5
+
+https://php-java.com/archives/2358
