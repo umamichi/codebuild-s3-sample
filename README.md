@@ -19,11 +19,12 @@ CodeBuild は連続的にスケールされ、複数のビルドが同時に処�
 
 + 自動でスケールされるので、並列ビルドが可能（待ち時間なし）
 
-+ AWSのサービス `EC2` `S3` `CodePipeline` `Lambda` などとの連携が容易
++ AWSの他サービス `EC2` `S3` `CodePipeline` `Lambda` などとの連携が容易
 
 + `CodePipeline` と連携すれば、テスト→リリースまでを自動化できる
 
 + 既存の`Jenkins`と連携ができる、ビルド処理部分だけを `CodeBuild` に置き換えも可能
+
 　→ JenkinsのUIやユーザ管理をそのまま使い続けられるメリットがある
 
 + `Github` や `GitBucket` `GitLab` と連携できて、PUSHをトリガーにビルドも可能
