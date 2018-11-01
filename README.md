@@ -159,7 +159,7 @@ phases:
       - aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
 ```
 
-Linuxのデフォルトでは `yarn` が使えないので、`yarn` をインストールしたのち、
+Ubuntuのデフォルトでは `yarn` が使えないので、`yarn` をインストールしたのち、
 
 `yarn build` し、 `AWS CLI` を使って `release` ディレクトリをS3にデプロイします
 
@@ -172,19 +172,87 @@ CodeBuildでは **デフォルトで `AWS CLI` が使えるところが、とて
 
 ### 4. S3バケットをつくる
 
-先ほど指定した名前のS3バケットを、AWSコンソールから作ります
+先ほど指定した名前のS3バケットを、`AWS S3` https://aws.amazon.com/jp/s3/ にログインして作ります
 
 
 ### 5. CodeBuildのビルドプロジェクトを作成
 
+`AWS CodeBuild` https://aws.amazon.com/jp/codebuild/ にログイン
 
+「ビルドプロジェクトを作成する」ボタンを押す
+
+以下のように設定するだけ
+
+<img src="images/1.png" alt="CodeBuild Settings" />
+
+**※GitへのPUSHをトリガーにしたビルドは `Private` リポジトリで可能**
+
+<img src="images/2.png" alt="CodeBuild Settings" />
+
+**今回はAWSに用意されている環境イメージを使うので「マネージド型イメージ」「Ubuntu」「Node.js」を選択**
+
+<img src="images/3.png" alt="CodeBuild Settings" />
+
+「buildspec.yml」を選択することで、先ほどルートに配置したymlファイルが使われる
+
+Buildspec名に、ymlのファイル名を指定することも可能
+
+
+### 6. IAMでロールにS3 FullAccessControll を付与
+
+`AWS IAM` https://aws.amazon.com/jp/iam/ にログイン
+
+左メニューから「ロール」を選択
+
+先ほど作成した `codebuild-codebuild-s3-sample-service-role` を選択
+
+「ポリシーをアタッチします」ボタンから、`AmazonS3FullAccess` を選択し、「ポリシーのアタッチ」ボタン押下
+
+### 7. ビルドしてみる
+
+CodeBuildの画面から、先ほど作成したビルドプロジェクト `codebuild-s3-sample` を選択し、「ビルドの開始」ボタン押下
+
+確認画面では何も変更せず、そのまま「ビルドの開始」ボタン押下
+
+↓このようにログが出てくる
+
+<img src="images/4.png" alt="CodeBuild Settings" />
+
+### 8. S3にアップされたかどうかを確認
+
+対象のバケットにアップロード＆公開されたことが確認できました
+
+<img src="images/5.png" alt="CodeBuild Settings" />
 
 
 ## （Advance）CloudFrontのキャッシュをクリアする
 
+
+```
+// buildspec.yml
+post_build:
+  commands:
+    - aws s3 sync release s3://codebuild-s3-sample --delete --acl public-read 
+    # 以下を追加
+    - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths '/*'
+```
+
+
+
 ## （Advance）Dockerイメージを使用する
 
+先ほどは `AWS CodeBuild` にあらかじめ用意されているイメージを使いましたが、
+
+自分で `Dockerfile` を用意し `Docker Hub` と `Github` を連携することで、カスタムイメージでビルドすることが可能
+
+参考）https://php-java.com/archives/2358
+
+
+
 ## （Advance）Cloud​FormationでLambdaをつくる
+
+
+---
 
 
 ## 参考
