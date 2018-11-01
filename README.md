@@ -2,6 +2,8 @@
 
 ## AWS Codebuildとは？
 
+<img src="logo.png" alt="CodeBuild" />
+
 その名の通り、CodeをBuildできるサービス
 
 ソースコードをコンパイルし、テストを実行し、デプロイ可能なソフトウェアパッケージを作成できる完全マネージド型のビルドサービス
