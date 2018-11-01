@@ -162,15 +162,22 @@ phases:
       - aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
 ```
 
-Ubuntuのデフォルトでは `yarn` が使えないので、`yarn` をインストールしたのち、
+Ubuntuのデフォルトでは `yarn` が使えないのでまず `yarn` をインストール
 
-`yarn build` し、 `AWS CLI` を使って `release` ディレクトリをS3にデプロイします
+その後 `yarn build` し `release` ディレクトリにビルド後のファイルを生成させる 
+
+最後に `AWS CLI` を使って `release` ディレクトリの内容をS3にデプロイします
+
+```
+aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
+```
 
 `--delete` でS3にしかないファイルはS3から削除
 
 `--acl public-read` で `public read` にして公開しています
 
-CodeBuildでは **デフォルトで `AWS CLI` が使えるところが、とても便利です**
+
+このようにCodeBuildでは **デフォルトで `AWS CLI` が使えるところが、とても便利です**
 
 
 ### 4. S3バケットをつくる
