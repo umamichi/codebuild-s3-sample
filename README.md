@@ -216,7 +216,7 @@ Buildspec名に、ymlのファイル名を指定することも可能
 
 先ほど作成した `codebuild-codebuild-s3-sample-service-role` を選択
 
-「ポリシーをアタッチします」ボタンから、`AmazonS3FullAccess` を選択し、「ポリシーのアタッチ」ボタン押下
+「ポリシーをアタッチします」ボタンから、`AmazonS3FullAccess` を選択し、「ポリシーのアタッチ」ボタン押下
 
 ### 7. ビルドしてみる
 
