@@ -250,8 +250,11 @@ post_build:
 参考）https://php-java.com/archives/2358
 
 
+## （Advance）`CodePipeline` と連携して、テストを自動化する
 
-## （Advance）Cloud​FormationでLambdaをつくる
+
+
+## （Advance）`CloudWatchEvent` `Lambda` と連携して、Slack通知する
 
 
 ---
