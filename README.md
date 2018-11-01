@@ -1,4 +1,4 @@
-# 脱Jenkins！AWS Codebuildを使ってフロントエンド開発環境をS3にデプロイする
+# 脱Jenkins！ AWS Codebuildを使ってフロントエンド環境をS3にデプロイする
 
 ## AWS Codebuildとは？
 
