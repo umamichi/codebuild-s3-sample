@@ -1,4 +1,4 @@
-# 脱Jenkins！ AWS Codebuildを使ってフロントエンド環境をS3にデプロイする
+# AWS Codebuildを使ってフロントエンド環境をS3にデプロイする
 
 ## AWS Codebuildとは？
 
@@ -23,21 +23,21 @@ CodeBuild は連続的にスケールされ、複数のビルドが同時に処�
 
 + `CodePipeline` と連携すれば、テスト→リリースまでを自動化できる
 
-+ 既存の`Jenkins`と連携ができる、ビルド処理部分だけを `CodeBuild` に置き換えも可能
++ 既存の`Jenkins`と連携ができ、ビルド処理部分だけを `CodeBuild` に置き換えも可能
 
 　→ JenkinsのUIやユーザ管理をそのまま使い続けられるメリットがある
 
 + `Github` や `GitBucket` `GitLab` と連携できて、PUSHをトリガーにビルドも可能
 
-+ インストール不要で `AWS CLI` が使える
++ `AWS CLI` がデフォルトで使える
 
 ### 料金
 
 ビルド1分ごとに料金が請求される
 
-一番安いプランで、Linuxで1分ビルドすると `0.005ドル` = `0.57円`
+一番安いプランで、Linuxで1分ビルドすると `0.005ドル` ≒ `0.57円`
 
-https://aws.amazon.com/jp/codebuild/pricing/
+詳しい料金はこちら：　https://aws.amazon.com/jp/codebuild/pricing/
 
 #### 無料利用枠あり（2018/11 現在）
 
@@ -52,7 +52,7 @@ CodeBuild の無料利用枠は、**12 か月間の AWS 無料利用枠の期間
 
 | | Jenkins | AWS CodeBuild |
 | -- | --- | --- |
-| 料金 | Jenkins AgentのEC2インスタンスの待機時間分 | ビルド1分ごとに請求 |
+| 料金 | Jenkins AgentのEC2インスタンスの待機時間分 | ビルド所要時間の1分ごとに請求 |
 | スケールアウト | しない（EC2のスペックが限界） | する |
 | OS | EC2のOSに依存 | コンテナを扱えるので自由に構築可能 |
 
@@ -162,15 +162,35 @@ phases:
       - aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
 ```
 
+#### 解説
+
+```
+version: 0.2
+```
+
+ビルド仕様のバージョン。2018年11月現在は、バージョン 0.2 を使用することをお勧めされている。
+
+```
+# install yarn
+- sudo apt-get update && sudo apt-get install apt-transport-https
+- curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+- echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+- sudo apt-get update && sudo apt-get install yarn
+```
+
 Ubuntuのデフォルトでは `yarn` が使えないのでまず `yarn` をインストール
 
-その後 `yarn build` し `release` ディレクトリにビルド後のファイルを生成させる 
+```
+- yarn build
+```
+
+`yarn build` し `release` ディレクトリにビルド後のファイルを生成させる 
+
+```
+- aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
+```
 
 最後に `AWS CLI` を使って `release` ディレクトリの内容をS3にデプロイします
-
-```
-aws s3 sync release s3://{S3のバケット名} --delete --acl public-read 
-```
 
 `--delete` でS3にしかないファイルはS3から削除
 
@@ -234,9 +254,26 @@ CodeBuildの画面から、先ほど作成したビルドプロジェクト `cod
 
 <img src="images/5.png" alt="CodeBuild Settings" />
 
+## GitへのPushをトリガーにしてビルド開始したい場合
 
-## （Advance）CloudFrontのキャッシュをクリアする
+Github Private リポジトリでのみ可能
 
+正規表現でブランチ名を指定する
+
+## 開発環境、ステージング環境、本番環境ごとにビルドしたい場合
+
+3つのビルドプロジェクトを作り
+
+`buildspec-develop.yml` `buildspec-staging.yml` `buildspec-production.yml` 
+
+のように3環境分のymlファイルを作れば良い
+
+それぞれのビルドプロジェクトで使用するymlファイル名を指定する
+
+
+## CloudFrontのキャッシュをクリアする
+
+`AWS CLI` を使えばできる
 
 ```
 // buildspec.yml
@@ -248,8 +285,7 @@ post_build:
 ```
 
 
-
-## （Advance）Dockerイメージを使用する
+## Dockerイメージを使用したい場合
 
 先ほどは `AWS CodeBuild` にあらかじめ用意されているイメージを使いましたが、
 
@@ -261,9 +297,15 @@ post_build:
 ## （Advance）`CodePipeline` と連携して、テストを自動化する
 
 
-
 ## （Advance）`CloudWatchEvent` `Lambda` と連携して、Slack通知する
 
+
+
+# まとめ
+
+開発環境がAWSであるなら、今後 `CodeBuild` を使った方が良い！
+
+ただし、`CodePipeline` や `Lambda` との連携、テスト結果の `slack通知` など完璧に実現したい場合は、ちょっとややこしいらしい（まだ試せていません・・）
 
 ---
 
