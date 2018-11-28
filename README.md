@@ -2,7 +2,7 @@
 
 ## AWS Codebuildとは？
 
-<img src="logo.png" alt="CodeBuild" />
+<img src="https://github.com/umamichi/codebuild-s3-sample/raw/master/logo.png" alt="CodeBuild" />
 
 その名の通り、CodeをBuildできるサービス
 
@@ -213,15 +213,15 @@ Ubuntuのデフォルトでは `yarn` が使えないのでまず `yarn` をイ�
 
 以下のように設定するだけ
 
-<img src="images/1.png" alt="CodeBuild Settings" />
+<img src="https://github.com/umamichi/codebuild-s3-sample/raw/master/images/1.png" alt="CodeBuild Settings" />
 
 **※GitへのPUSHをトリガーにしたビルドは `Private` リポジトリで可能**
 
-<img src="images/2.png" alt="CodeBuild Settings" />
+<img src="https://github.com/umamichi/codebuild-s3-sample/raw/master/images/2.png" alt="CodeBuild Settings" />
 
 **今回はAWSに用意されている環境イメージを使うので「マネージド型イメージ」「Ubuntu」「Node.js」を選択**
 
-<img src="images/3.png" alt="CodeBuild Settings" />
+<img src="https://github.com/umamichi/codebuild-s3-sample/raw/master/images/3.png" alt="CodeBuild Settings" />
 
 「buildspec.yml」を選択することで、先ほどルートに配置したymlファイルが使われる
 
@@ -246,13 +246,13 @@ CodeBuildの画面から、先ほど作成したビルドプロジェクト `cod
 
 ↓このようにログが出てくる
 
-<img src="images/4.png" alt="CodeBuild Settings" />
+<img src="https://github.com/umamichi/codebuild-s3-sample/raw/master/images/4.png" alt="CodeBuild Settings" />
 
 ### 8. S3にアップされたかどうかを確認
 
 対象のバケットにアップロード＆公開されたことが確認できました
 
-<img src="images/5.png" alt="CodeBuild Settings" />
+<img src="https://github.com/umamichi/codebuild-s3-sample/raw/master/images/5.png" alt="CodeBuild Settings" />
 
 ## GitへのPushをトリガーにしてビルド開始したい場合
 
